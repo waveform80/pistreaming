@@ -131,25 +131,26 @@ class BroadcastThread(Thread):
 
 
 def main():
-    print('Initializing websockets server on port %d' % WS_PORT)
-    websocket_server = make_server(
-        '', WS_PORT,
-        server_class=WSGIServer,
-        handler_class=WebSocketWSGIRequestHandler,
-        app=WebSocketWSGIApplication(handler_cls=StreamingWebSocket))
-    websocket_server.initialize_websockets_manager()
-    websocket_thread = Thread(target=websocket_server.serve_forever)
-    print('Initializing HTTP server on port %d' % HTTP_PORT)
-    http_server = StreamingHttpServer()
-    http_thread = Thread(target=http_server.serve_forever)
     print('Initializing camera')
     with picamera.PiCamera() as camera:
         camera.resolution = (WIDTH, HEIGHT)
         camera.framerate = FRAMERATE
         sleep(1) # camera warm-up time
+        print('Initializing websockets server on port %d' % WS_PORT)
+        websocket_server = make_server(
+            '', WS_PORT,
+            server_class=WSGIServer,
+            handler_class=WebSocketWSGIRequestHandler,
+            app=WebSocketWSGIApplication(handler_cls=StreamingWebSocket))
+        websocket_server.initialize_websockets_manager()
+        websocket_thread = Thread(target=websocket_server.serve_forever)
+        print('Initializing HTTP server on port %d' % HTTP_PORT)
+        http_server = StreamingHttpServer()
+        http_thread = Thread(target=http_server.serve_forever)
         print('Initializing broadcast thread')
         output = BroadcastOutput(camera)
         broadcast_thread = BroadcastThread(output.converter, websocket_server)
+        print('Starting recording')
         camera.start_recording(output, 'yuv')
         try:
             print('Starting websockets thread')
