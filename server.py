@@ -94,11 +94,11 @@ class BroadcastOutput(object):
             '-f', 'rawvideo',
             '-pix_fmt', 'yuv420p',
             '-s', '%dx%d' % camera.resolution,
-            '-r', str(FRAMERATE),
+            '-r', str(float(camera.framerate)),
             '-i', '-',
             '-f', 'mpeg1video',
             '-b', '800k',
-            '-r', str(FRAMERATE),
+            '-r', str(float(camera.framerate)),
             '-'],
             stdin=PIPE, stdout=PIPE, stderr=io.open(os.devnull, 'wb'),
             shell=False, close_fds=True)
