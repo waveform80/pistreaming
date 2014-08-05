@@ -2,7 +2,7 @@
 
 This is a demonstration for low latency streaming of the Pi's camera module to
 any reasonably modern web browser, utilizing Dominic Szablewski's excellent
-[MSJPEG project](https://github.com/phoboslab/jsmpeg). Other dependencies are
+[JSMPEG project](https://github.com/phoboslab/jsmpeg). Other dependencies are
 the Python [ws4py library](http://ws4py.readthedocs.org/), my [picamera
 library](http://picamera.readthedocs.org/) (specifically version 1.7 or above),
 and [FFmpeg](http://ffmpeg.org).
@@ -138,11 +138,11 @@ including weird not-really-standards like Apple's HLS (which usually involves
 lots of latency). Then there's the issue that the Pi's camera outputs raw
 H.264, and what most browsers want is a nice MPEG transport stream (TS). FFmpeg
 seemed like the answer to that, but the version that ships with Raspbian
-doesn't seem to like outputting valid DTS (Display Time Stamps) with the Pi's
-output. Perhaps later versions work better, but I was looking for a solution
-that wouldn't involve users having to jump through hoops to create a custom
-FFmpeg build (mostly because I could just imagine the amount of extra support
-questions I'd get from going that route)!
+doesn't seem to like outputting valid PTS (Presentation Time Stamps) with the
+Pi's output. Perhaps later versions work better, but I was looking for a
+solution that wouldn't involve users having to jump through hoops to create a
+custom FFmpeg build (mostly because I could just imagine the amount of extra
+support questions I'd get from going that route)!
 
 So, what about other formats? Transcoding to almost anything else (WebM, Ogg,
 etc.) is basically out of the question because the Pi's CPU just isn't fast
