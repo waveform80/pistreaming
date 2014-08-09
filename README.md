@@ -12,9 +12,10 @@ and [FFmpeg](http://ffmpeg.org).
 
 Firstly make sure you've got a functioning Pi camera module (test it with
 `raspistill` to be certain). Then make sure you've got the following packages
-installed in Raspbian (or the equivalents for whatever distro you're using):
+installed:
 
-    $ sudo apt-get install python-picamera python-ws4py libav-tools git
+    $ sudo apt-get install libav-tools git python-setuptools python-pip python-picamera
+    $ sudo pip install ws4py
 
 Next, clone this repository:
 
@@ -42,6 +43,12 @@ Now fire up your favourite web-browser and visit the address
 from the camera. You should be able to visit the URL from multiple browsers
 simultaneously (although obviously you'll saturate the Pi's bandwidth sooner or
 later).
+
+If you find the video stutters or the latency is particularly bad (more than a
+second), please check you have a decent network connection between the Pi and
+the clients. I've found ethernet works perfectly (even with things like
+powerline boxes in between) but a poor wifi connection doesn't provide enough
+bandwidth, and dropped packets are not handled terribly well.
 
 To shut down the server press Ctrl+C - you may find it'll take a while
 to shut down unless you close the client web browsers (Chrome in particular
