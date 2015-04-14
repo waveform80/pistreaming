@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta name="viewport" content="width=320, initial-scale=1"/>
+	<meta name="viewport" content="width=${WIDTH}, initial-scale=1"/>
 	<title>jsmpeg streaming</title>
 	<style type="text/css">
 		body {
-			background: #333;
+			background: ${BGCOLOR};
 			text-align: center;
 			margin-top: 10%;
 		}
 		#videoCanvas {
 			/* Always stretch the canvas to 640x480, regardless of its
 			internal size. */
-			width: 640px;
-			height: 480px;
+			width: ${WIDTH}px;
+			height: ${HEIGHT}px;
 		}
 	</style>
 </head>
@@ -22,7 +22,7 @@
 		change this internal resolution to whatever the source provides. The size the
 		canvas is displayed on the website is dictated by the CSS style.
 	-->
-	<canvas id="videoCanvas" width="640" height="480">
+	<canvas id="videoCanvas" width="${WIDTH}" height="${HEIGHT}">
 		<p>
 			Please use a browser that supports the Canvas Element, like
 			<a href="http://www.google.com/chrome">Chrome</a>,
@@ -35,11 +35,11 @@
 		// Show loading notice
 		var canvas = document.getElementById('videoCanvas');
 		var ctx = canvas.getContext('2d');
-		ctx.fillStyle = '#444';
+		ctx.fillStyle = '${COLOR}';
 		ctx.fillText('Loading...', canvas.width/2-30, canvas.height/3);
 
 		// Setup the WebSocket connection and start the player
-		var client = new WebSocket('ws://@ADDRESS@/');
+		var client = new WebSocket('ws://${ADDRESS}/');
 		var player = new jsmpeg(client, {canvas:canvas});
 	</script>
 </body>

@@ -15,6 +15,7 @@ import io
 import os
 import shutil
 from subprocess import Popen, PIPE
+from string import Template
 from struct import Struct
 from threading import Thread
 from time import sleep, time
@@ -26,14 +27,18 @@ from ws4py.websocket import WebSocket
 from ws4py.server.wsgirefserver import WSGIServer, WebSocketWSGIRequestHandler
 from ws4py.server.wsgiutils import WebSocketWSGIApplication
 
-
-WIDTH = 320
-HEIGHT = 240
+###########################################
+# CONFIGURATION
+WIDTH = 640
+HEIGHT = 480
 FRAMERATE = 24
 HTTP_PORT = 8082
 WS_PORT = 8084
+COLOR = u'#444'
+BGCOLOR = u'#333'
 JSMPEG_MAGIC = b'jsmp'
 JSMPEG_HEADER = Struct(native_str('>4sHH'))
+###########################################
 
 
 class StreamingHttpHandler(BaseHTTPRequestHandler):
@@ -51,9 +56,10 @@ class StreamingHttpHandler(BaseHTTPRequestHandler):
             content = self.server.jsmpg_content
         elif self.path == '/index.html':
             content_type = 'text/html; charset=utf-8'
-            content = self.server.index_template.replace(
-                    '@ADDRESS@',
-                    '%s:%d' % (self.request.getsockname()[0], WS_PORT))
+            tpl = Template(self.server.index_template)
+            content = tpl.safe_substitute(dict(
+                ADDRESS='%s:%d' % (self.request.getsockname()[0], WS_PORT),
+		WIDTH=WIDTH, HEIGHT=HEIGHT, COLOR=COLOR, BGCOLOR=BGCOLOR))
         else:
             self.send_error(404, 'File not found')
             return
