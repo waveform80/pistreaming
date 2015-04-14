@@ -59,7 +59,7 @@ class StreamingHttpHandler(BaseHTTPRequestHandler):
             tpl = Template(self.server.index_template)
             content = tpl.safe_substitute(dict(
                 ADDRESS='%s:%d' % (self.request.getsockname()[0], WS_PORT),
-		WIDTH=WIDTH, HEIGHT=HEIGHT, COLOR=COLOR, BGCOLOR=BGCOLOR))
+                WIDTH=WIDTH, HEIGHT=HEIGHT, COLOR=COLOR, BGCOLOR=BGCOLOR))
         else:
             self.send_error(404, 'File not found')
             return
