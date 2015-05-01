@@ -121,7 +121,7 @@ class BroadcastThread(Thread):
     def run(self):
         try:
             while True:
-                buf = self.converter.stdout.read(4096)
+                buf = self.converter.stdout.read(512)
                 if buf:
                     self.websocket_server.manager.broadcast(buf, binary=True)
                 elif self.converter.poll() is not None:
