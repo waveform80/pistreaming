@@ -1,16 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-native_str = str
-str = type('')
-
 import sys
-PY2 = sys.version_info.major == 2
 import io
 import os
 import shutil
@@ -19,7 +9,7 @@ from string import Template
 from struct import Struct
 from threading import Thread
 from time import sleep, time
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from wsgiref.simple_server import make_server
 
 import picamera
@@ -37,7 +27,7 @@ WS_PORT = 8084
 COLOR = u'#444'
 BGCOLOR = u'#333'
 JSMPEG_MAGIC = b'jsmp'
-JSMPEG_HEADER = Struct(native_str('>4sHH'))
+JSMPEG_HEADER = Struct('>4sHH')
 ###########################################
 
 
@@ -75,12 +65,8 @@ class StreamingHttpHandler(BaseHTTPRequestHandler):
 
 class StreamingHttpServer(HTTPServer):
     def __init__(self):
-        # Eurgh ... old-style classes ...
-        if PY2:
-            HTTPServer.__init__(self, ('', HTTP_PORT), StreamingHttpHandler)
-        else:
-            super(StreamingHttpServer, self).__init__(
-                    ('', HTTP_PORT), StreamingHttpHandler)
+        super(StreamingHttpServer, self).__init__(
+                ('', HTTP_PORT), StreamingHttpHandler)
         with io.open('index.html', 'r') as f:
             self.index_template = f.read()
         with io.open('jsmpg.js', 'r') as f:

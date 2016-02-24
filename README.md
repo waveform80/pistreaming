@@ -14,8 +14,7 @@ Firstly make sure you've got a functioning Pi camera module (test it with
 `raspistill` to be certain). Then make sure you've got the following packages
 installed:
 
-    $ sudo apt-get install libav-tools git python-setuptools python-pip python-picamera
-    $ sudo pip install ws4py
+    $ sudo apt-get install libav-tools git python3-picamera python3-ws4py
 
 Next, clone this repository:
 
@@ -28,7 +27,7 @@ Run the Python server script which should print out a load of stuff
 to the console as it starts up:
 
     $ cd pistreaming
-    $ python server.py
+    $ python3 server.py
     Initializing websockets server on port 8084
     Initializing HTTP server on port 8082
     Initializing camera
