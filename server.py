@@ -28,6 +28,9 @@ COLOR = u'#444'
 BGCOLOR = u'#333'
 JSMPEG_MAGIC = b'jsmp'
 JSMPEG_HEADER = Struct('>4sHH')
+VFLIP = True
+HFLIP = True
+
 ###########################################
 
 
@@ -127,6 +130,7 @@ def main():
     with picamera.PiCamera() as camera:
         camera.resolution = (WIDTH, HEIGHT)
         camera.framerate = FRAMERATE
+        camera.vflip = VFLIP # flips image rightside up, as needed
         sleep(1) # camera warm-up time
         print('Initializing websockets server on port %d' % WS_PORT)
         websocket_server = make_server(
