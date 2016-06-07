@@ -131,6 +131,7 @@ def main():
         camera.resolution = (WIDTH, HEIGHT)
         camera.framerate = FRAMERATE
         camera.vflip = VFLIP # flips image rightside up, as needed
+        camera.hflip = HFLIP # flips image left-right, as needed
         sleep(1) # camera warm-up time
         print('Initializing websockets server on port %d' % WS_PORT)
         websocket_server = make_server(
