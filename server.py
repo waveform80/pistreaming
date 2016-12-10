@@ -54,9 +54,9 @@ class StreamingHttpHandler(BaseHTTPRequestHandler):
                 hat.servo_enable(2, True)
                 try:
                     if 'pan' in data:
-                        hat.pan(data['pan'])
+                        hat.pan(-data['pan'])
                     if 'tilt' in data:
-                        hat.tilt(data['tilt'])
+                        hat.tilt(-data['tilt'])
                     sleep(0.1)
                 finally:
                     hat.servo_enable(1, False)
@@ -150,9 +150,8 @@ def main():
     hat.servo_enable(1, False)
     hat.servo_enable(2, False)
     print('Initializing camera')
-    with picamera.PiCamera() as camera:
-        camera.resolution = (WIDTH, HEIGHT)
-        camera.framerate = FRAMERATE
+    with picamera.PiCamera(resolution=(WIDTH, HEIGHT), framerate=FRAMERATE) as camera:
+        camera.rotation = 180
         sleep(1) # camera warm-up time
         print('Initializing websockets server on port %d' % WS_PORT)
         websocket_server = make_server(
