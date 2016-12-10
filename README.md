@@ -14,7 +14,7 @@ Firstly make sure you've got a functioning Pi camera module (test it with
 `raspistill` to be certain). Then make sure you've got the following packages
 installed:
 
-    $ sudo apt-get install libav-tools git python3-picamera python3-ws4py
+    $ sudo apt-get install libav-tools git python3-picamera python3-ws4py python3-pantilthat
 
 Next, clone this repository:
 
@@ -28,6 +28,7 @@ to the console as it starts up:
 
     $ cd pistreaming
     $ python3 server.py
+    Initializing HAT
     Initializing websockets server on port 8084
     Initializing HTTP server on port 8082
     Initializing camera
@@ -74,6 +75,9 @@ classes, and is quite simple:
   the websocket port.
 * In response to an HTTP GET request for "/jsmpg.js" it will serve up the
   contents of jsmpg.js verbatim.
+* In response to an HTTP GET request for "/do_orient?pan=0&tilt=0" it will
+  orient the pan-tilt HAT to the specified values; the sliders present in
+  "index.html" are hooked to some JavaScript which will make such requests
 * In response to an HTTP GET request for anything else, it will return 404.
 * In response to an HTTP HEAD request for any of the above, it will simply
   do the same as for GET but will omit the content.
