@@ -15,6 +15,15 @@
 			width: ${WIDTH}px;
 			height: ${HEIGHT}px;
 		}
+		input#pan {
+			width: ${WIDTH}px;
+			display: block;
+			margin: 8px auto;
+		}
+		input#tilt {
+			height: ${HEIGHT}px;
+			-webkit-appearance: slider-vertical;
+		}
 	</style>
 </head>
 <body>
@@ -22,6 +31,7 @@
 		change this internal resolution to whatever the source provides. The size the
 		canvas is displayed on the website is dictated by the CSS style.
 	-->
+	<input id="tilt" orient="vertical" type="range" min="-90" max="90" value="0" oninput="doOrient('tilt', value)" />
 	<canvas id="videoCanvas" width="${WIDTH}" height="${HEIGHT}">
 		<p>
 			Please use a browser that supports the Canvas Element, like
@@ -30,6 +40,7 @@
 			<a href="http://www.apple.com/safari/">Safari</a> or Internet Explorer 10
 		</p>
 	</canvas>
+	<input id="pan" type="range" min="-90" max="90" value="0" oninput="doOrient('pan', value)" />
 	<script type="text/javascript" src="jsmpg.js"></script>
 	<script type="text/javascript">
 		// Show loading notice
@@ -41,6 +52,12 @@
 		// Setup the WebSocket connection and start the player
 		var client = new WebSocket('ws://${ADDRESS}/');
 		var player = new jsmpeg(client, {canvas:canvas});
+
+		function doOrient(servo, value) {
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', '/do_orient?' + servo + '=' + value, false);
+			xhr.send();
+		}
 	</script>
 </body>
 </html>

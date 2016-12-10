@@ -10,9 +10,11 @@ from struct import Struct
 from threading import Thread
 from time import sleep, time
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 from wsgiref.simple_server import make_server
 
 import picamera
+import pantilthat as hat
 from ws4py.websocket import WebSocket
 from ws4py.server.wsgirefserver import WSGIServer, WebSocketWSGIRequestHandler
 from ws4py.server.wsgiutils import WebSocketWSGIApplication
@@ -36,15 +38,36 @@ class StreamingHttpHandler(BaseHTTPRequestHandler):
         self.do_GET()
 
     def do_GET(self):
-        if self.path == '/':
+        url = urlparse(self.path)
+        if url.path == '/':
             self.send_response(301)
             self.send_header('Location', '/index.html')
             self.end_headers()
             return
-        elif self.path == '/jsmpg.js':
+        elif url.path == '/do_orient':
+            try:
+                data = {k: int(v[0]) for k, v in parse_qs(url.query).items()}
+            except (IndexError, ValueError) as e:
+                self.send_error(400, str(e))
+            else:
+                hat.servo_enable(1, True)
+                hat.servo_enable(2, True)
+                try:
+                    if 'pan' in data:
+                        hat.pan(data['pan'])
+                    if 'tilt' in data:
+                        hat.tilt(data['tilt'])
+                    sleep(0.1)
+                finally:
+                    hat.servo_enable(1, False)
+                    hat.servo_enable(2, False)
+                self.send_response(200)
+                self.end_headers()
+                return
+        elif url.path == '/jsmpg.js':
             content_type = 'application/javascript'
             content = self.server.jsmpg_content
-        elif self.path == '/index.html':
+        elif url.path == '/index.html':
             content_type = 'text/html; charset=utf-8'
             tpl = Template(self.server.index_template)
             content = tpl.safe_substitute(dict(
@@ -123,6 +146,9 @@ class BroadcastThread(Thread):
 
 
 def main():
+    print('Initializing HAT')
+    hat.servo_enable(1, False)
+    hat.servo_enable(2, False)
     print('Initializing camera')
     with picamera.PiCamera() as camera:
         camera.resolution = (WIDTH, HEIGHT)
@@ -166,6 +192,9 @@ def main():
             websocket_server.shutdown()
             print('Waiting for HTTP server thread to finish')
             http_thread.join()
+            print('Disabling servos')
+            hat.servo_enable(1, False)
+            hat.servo_enable(2, False)
             print('Waiting for websockets thread to finish')
             websocket_thread.join()
 
