@@ -1,0 +1,112 @@
+body {
+	margin-top: 10%;
+	font-family: Sans, Arial, helvetica, sans-serif;
+	font-size: 12pt;
+	color: white;
+	text-align: center;
+	background: ${BGCOLOR};
+}
+a {
+	text-decoration: underline;
+	color: white;
+}
+hr {
+	border: 1px dashed white;
+}
+ul, input {
+	margin: 0;
+	padding: 0;
+}
+div#videoDiv {
+	position: relative;
+	margin: 0 auto;
+	width: calc(${WIDTH}px + 4em);
+	height: calc(${HEIGHT}px + 4em);
+}
+#videoCanvas {
+	/* Always stretch the canvas to 640x480, regardless of its
+	internal size. */
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: ${WIDTH}px;
+	height: ${HEIGHT}px;
+}
+#panLabel {
+	position: absolute;
+	left: 4em;
+	bottom: 0;
+}
+input#pan {
+	position: absolute;
+	right: 0;
+	bottom: 2em;
+	width: ${WIDTH}px;
+}
+#tiltLabel {
+	position: absolute;
+	left: 1em;
+	bottom: 4em;
+	-webkit-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	-ms-transform: rotate(-90deg);
+	-o-transform: rotate(-90deg);
+	transform: rotate(-90deg);
+	-webkit-transform-origin: left center;
+	-moz-transform-origin: left center;
+	-ms-transform-origin: left center;
+	-o-transform-origin: left center;
+	transform-origin: left center;
+}
+input#tilt {
+	-webkit-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	-ms-transform: rotate(-90deg);
+	-o-transform: rotate(-90deg);
+	transform: rotate(-90deg);
+	-webkit-transform-origin: left center;
+	-moz-transform-origin: left center;
+	-ms-transform-origin: left center;
+	-o-transform-origin: left center;
+	transform-origin: left center;
+	position: absolute;
+	left: 3em;
+	bottom: 4em;
+	width: ${HEIGHT}px;
+}
+div#pixelDiv {
+	margin: 1em auto;
+	-webkit-columns: 9;
+	-moz-columns: 9;
+	columns: 9;
+	-webkit-column-gap: 1em;
+	-moz-column-gap: 1em;
+	column-gap: 1em;
+}
+div#pixelDiv ul {
+	list-style-type: none;
+}
+div#pixelDiv input {
+	margin-right: 4px;
+	vertical-align: bottom;
+}
+div#colorDiv {
+	margin: 1em auto;
+	-webkit-columns: 4;
+	-moz-columns: 4;
+	columns: 4;
+	-webkit-column-gap: 1em;
+	-moz-column-gap: 1em;
+	column-gap: 1em;
+}
+div#colorDiv ul {
+	list-style-type: none;
+}
+div#colorDiv ul li {
+	text-align: center;
+}
+div#colorDiv input {
+	display: block;
+	width: 100%;
+}
+
