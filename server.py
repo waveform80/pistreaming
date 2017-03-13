@@ -22,6 +22,7 @@ from ws4py.server.wsgiutils import WebSocketWSGIApplication
 WIDTH = 640
 HEIGHT = 480
 FRAMERATE = 24
+ROTATION = 0
 HTTP_PORT = 8082
 WS_PORT = 8084
 COLOR = u'#444'
@@ -127,6 +128,7 @@ def main():
     with picamera.PiCamera() as camera:
         camera.resolution = (WIDTH, HEIGHT)
         camera.framerate = FRAMERATE
+        camera.rotation = ROTATION
         sleep(1) # camera warm-up time
         print('Initializing websockets server on port %d' % WS_PORT)
         websocket_server = make_server(
