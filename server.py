@@ -24,6 +24,7 @@ HEIGHT = 480
 FRAMERATE = 24
 HTTP_PORT = 8082
 WS_PORT = 8084
+ROTATION=0
 COLOR = u'#444'
 BGCOLOR = u'#333'
 JSMPEG_MAGIC = b'jsmp'
@@ -127,6 +128,7 @@ def main():
     with picamera.PiCamera() as camera:
         camera.resolution = (WIDTH, HEIGHT)
         camera.framerate = FRAMERATE
+        camera.rotation = ROTATION
         sleep(1) # camera warm-up time
         print('Initializing websockets server on port %d' % WS_PORT)
         websocket_server = make_server(
