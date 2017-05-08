@@ -138,7 +138,7 @@ class HTTP11WebSocketWSGIRequestHandler(WebSocketWSGIRequestHandler):
             self.rfile, self.wfile, self.get_stderr(), self.get_environ()
         )
         handler.request_handler = self  # backpointer for logging
-        #handler.http_version = "1.1"          # this is the only addition from the original WebSocketWSGIRequestHandler
+        handler.http_version = "1.1"          # this is the only addition from the original WebSocketWSGIRequestHandler
         handler.run(self.server.get_app())
 
 
