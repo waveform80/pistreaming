@@ -14,7 +14,7 @@ from wsgiref.simple_server import make_server
 
 import picamera
 from ws4py.websocket import WebSocket
-from ws4py.server.wsgirefserver import WSGIServer, WebSocketWSGIRequestHandler
+from ws4py.server.wsgirefserver import WSGIServer, WebSocketWSGIRequestHandler, WebSocketWSGIHandler
 from ws4py.server.wsgiutils import WebSocketWSGIApplication
 
 ###########################################
@@ -122,6 +122,26 @@ class BroadcastThread(Thread):
             self.converter.stdout.close()
 
 
+class HTTP11WebSocketWSGIRequestHandler(WebSocketWSGIRequestHandler):
+
+    def handle(self):
+        """
+        Unfortunately the base class forces us
+        to override the whole method to actually provide our wsgi handler.
+        """
+        self.raw_requestline = self.rfile.readline()
+        if not self.parse_request():  # An error code has been sent, just exit
+            return
+
+        # next line is where we'd have expect a configuration key somehow
+        handler = WebSocketWSGIHandler(
+            self.rfile, self.wfile, self.get_stderr(), self.get_environ()
+        )
+        handler.request_handler = self  # backpointer for logging
+        handler.http_version = "1.1"          # this is the only addition from the original WebSocketWSGIRequestHandler
+        handler.run(self.server.get_app())
+
+
 def main():
     print('Initializing camera')
     with picamera.PiCamera() as camera:
@@ -132,7 +152,7 @@ def main():
         websocket_server = make_server(
             '', WS_PORT,
             server_class=WSGIServer,
-            handler_class=WebSocketWSGIRequestHandler,
+            handler_class=HTTP11WebSocketWSGIRequestHandler,
             app=WebSocketWSGIApplication(handler_cls=StreamingWebSocket))
         websocket_server.initialize_websockets_manager()
         websocket_thread = Thread(target=websocket_server.serve_forever)
