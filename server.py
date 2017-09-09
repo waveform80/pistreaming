@@ -192,6 +192,7 @@ def main():
     hat.servo_enable(1, False)
     hat.servo_enable(2, False)
     hat.light_mode(hat.WS2812)
+    hat.light_type(hat.GRBW)
     print('Initializing camera')
     with picamera.PiCamera(resolution=(WIDTH, HEIGHT), framerate=FRAMERATE) as camera:
         camera.rotation = 180
