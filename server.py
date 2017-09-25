@@ -30,6 +30,9 @@ COLOR = u'#444'
 BGCOLOR = u'#333'
 JSMPEG_MAGIC = b'jsmp'
 JSMPEG_HEADER = Struct('>4sHH')
+VFLIP = False
+HFLIP = False
+
 ###########################################
 
 
@@ -194,8 +197,11 @@ def main():
     hat.light_mode(hat.WS2812)
     hat.light_type(hat.GRBW)
     print('Initializing camera')
-    with picamera.PiCamera(resolution=(WIDTH, HEIGHT), framerate=FRAMERATE) as camera:
-        camera.rotation = 180
+    with picamera.PiCamera() as camera:
+        camera.resolution = (WIDTH, HEIGHT)
+        camera.framerate = FRAMERATE
+        camera.vflip = VFLIP # flips image rightside up, as needed
+        camera.hflip = HFLIP # flips image left-right, as needed
         sleep(1) # camera warm-up time
         print('Initializing websockets server on port %d' % WS_PORT)
         websocket_server = make_server(
