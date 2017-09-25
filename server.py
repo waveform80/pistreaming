@@ -14,7 +14,7 @@ from wsgiref.simple_server import make_server
 
 import picamera
 from ws4py.websocket import WebSocket
-from ws4py.server.wsgirefserver import WSGIServer, WebSocketWSGIRequestHandler
+from ws4py.server.wsgirefserver import WSGIServer, WebSocketWSGIHandler, WSGIRequestHandler
 from ws4py.server.wsgiutils import WebSocketWSGIApplication
 
 ###########################################
@@ -51,7 +51,7 @@ class StreamingHttpHandler(BaseHTTPRequestHandler):
             content_type = 'text/html; charset=utf-8'
             tpl = Template(self.server.index_template)
             content = tpl.safe_substitute(dict(
-                ADDRESS='%s:%d' % (self.request.getsockname()[0], WS_PORT),
+                ADDRESS='%s:%d' % ("' + window.location.hostname +'", WS_PORT),
                 WIDTH=WIDTH, HEIGHT=HEIGHT, COLOR=COLOR, BGCOLOR=BGCOLOR))
         else:
             self.send_error(404, 'File not found')
@@ -124,6 +124,25 @@ class BroadcastThread(Thread):
         finally:
             self.converter.stdout.close()
 
+# Use this to set 'http_version' to 1.1
+# Replacement for WebSocketWSGIRequestHandler class found in ws4py's wsgirefserver.py
+class HTTP11WebSocketWSGIRequestHandler(WSGIRequestHandler):
+    def handle(self):
+        """
+        Unfortunately the base class forces us
+        to override the whole method to actually provide our wsgi handler.
+        """
+        self.raw_requestline = self.rfile.readline()
+        if not self.parse_request(): # An error code has been sent, just exit
+            return
+
+        # next line is where we'd have expect a configuration key somehow
+        handler = WebSocketWSGIHandler(
+            self.rfile, self.wfile, self.get_stderr(), self.get_environ()
+        )
+        handler.request_handler = self      # backpointer for logging
+        handler.http_version="1.1"          # This is the only addition to the original class that this replaces
+        handler.run(self.server.get_app())
 
 def main():
     print('Initializing camera')
@@ -137,7 +156,7 @@ def main():
         websocket_server = make_server(
             '', WS_PORT,
             server_class=WSGIServer,
-            handler_class=WebSocketWSGIRequestHandler,
+            handler_class=HTTP11WebSocketWSGIRequestHandler,
             app=WebSocketWSGIApplication(handler_cls=StreamingWebSocket))
         websocket_server.initialize_websockets_manager()
         websocket_thread = Thread(target=websocket_server.serve_forever)
