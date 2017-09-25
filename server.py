@@ -7,12 +7,14 @@ import shutil
 from subprocess import Popen, PIPE
 from string import Template
 from struct import Struct
-from threading import Thread
+from threading import Thread, Lock
 from time import sleep, time
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 from wsgiref.simple_server import make_server
 
 import picamera
+import pantilthat as hat
 from ws4py.websocket import WebSocket
 from ws4py.server.wsgirefserver import WSGIServer, WebSocketWSGIRequestHandler
 from ws4py.server.wsgiutils import WebSocketWSGIApplication
@@ -39,20 +41,78 @@ class StreamingHttpHandler(BaseHTTPRequestHandler):
         self.do_GET()
 
     def do_GET(self):
-        if self.path == '/':
+        url = urlparse(self.path)
+        if url.path == '/':
             self.send_response(301)
             self.send_header('Location', '/index.html')
             self.end_headers()
             return
-        elif self.path == '/jsmpg.js':
+        elif url.path == '/do_orient':
+            try:
+                data = {k: int(v[0]) for k, v in parse_qs(url.query).items()}
+            except (IndexError, ValueError) as e:
+                self.send_error(400, str(e))
+            else:
+                with self.server.hat_lock:
+                    hat.servo_enable(1, True)
+                    hat.servo_enable(2, True)
+                    try:
+                        delay = 0.1
+                        if 'pan' in data:
+                            pan = -data['pan']
+                            delay = max(delay, 0.5 * (abs(pan - self.server.last_pan) / 180))
+                            hat.pan(pan)
+                            self.server.last_pan = pan
+                        if 'tilt' in data:
+                            tilt = -data['tilt']
+                            delay = max(delay, 0.5 * (abs(tilt - self.server.last_tilt) / 180))
+                            hat.tilt(tilt)
+                            self.server.last_tilt = tilt
+                        # Wait for the servo to complete its sweep
+                        sleep(delay)
+                    finally:
+                        hat.servo_enable(1, False)
+                        hat.servo_enable(2, False)
+                self.send_response(200)
+                self.end_headers()
+            return
+        elif url.path == '/do_light':
+            try:
+                data = {
+                    int(k): (int(r), int(g), int(b), int(w))
+                    for k, v in parse_qs(url.query).items()
+                    for r, g, b, w in (v[0].split(',', 3),)
+                    }
+            except (IndexError, ValueError) as e:
+                self.send_error(400, str(e))
+            else:
+                if -1 in data:
+                    r, g, b, w = data.pop(-1)
+                    for i in range(8):
+                        data[i] = r, g, b, w
+                with self.server.hat_lock:
+                    for index, (r, g, b, w) in data.items():
+                        if 0 <= index < 8:
+                            hat.set_pixel_rgbw(index, r, g, b, w)
+                    hat.show()
+                self.send_response(200)
+                self.end_headers()
+            return
+        elif url.path == '/jsmpg.js':
             content_type = 'application/javascript'
             content = self.server.jsmpg_content
-        elif self.path == '/index.html':
+        elif url.path == '/index.html':
             content_type = 'text/html; charset=utf-8'
             tpl = Template(self.server.index_template)
             content = tpl.safe_substitute(dict(
-                ADDRESS='%s:%d' % (self.request.getsockname()[0], WS_PORT),
-                WIDTH=WIDTH, HEIGHT=HEIGHT, COLOR=COLOR, BGCOLOR=BGCOLOR))
+                WS_PORT=WS_PORT, WIDTH=WIDTH, HEIGHT=HEIGHT, COLOR=COLOR,
+                BGCOLOR=BGCOLOR))
+        elif url.path == '/styles.css':
+            content_type = 'text/css; charset=utf-8'
+            tpl = Template(self.server.styles_template)
+            content = tpl.safe_substitute(dict(
+                WS_PORT=WS_PORT, WIDTH=WIDTH, HEIGHT=HEIGHT, COLOR=COLOR,
+                BGCOLOR=BGCOLOR))
         else:
             self.send_error(404, 'File not found')
             return
@@ -70,8 +130,13 @@ class StreamingHttpServer(HTTPServer):
     def __init__(self):
         super(StreamingHttpServer, self).__init__(
                 ('', HTTP_PORT), StreamingHttpHandler)
+        self.hat_lock = Lock()
+        self.last_pan = 0
+        self.last_tilt = 0
         with io.open('index.html', 'r') as f:
             self.index_template = f.read()
+        with io.open('styles.css', 'r') as f:
+            self.styles_template = f.read()
         with io.open('jsmpg.js', 'r') as f:
             self.jsmpg_content = f.read()
 
@@ -126,6 +191,11 @@ class BroadcastThread(Thread):
 
 
 def main():
+    print('Initializing HAT')
+    hat.servo_enable(1, False)
+    hat.servo_enable(2, False)
+    hat.light_mode(hat.WS2812)
+    hat.light_type(hat.GRBW)
     print('Initializing camera')
     with picamera.PiCamera() as camera:
         camera.resolution = (WIDTH, HEIGHT)
@@ -171,6 +241,11 @@ def main():
             websocket_server.shutdown()
             print('Waiting for HTTP server thread to finish')
             http_thread.join()
+            print('Disabling servos')
+            hat.servo_enable(1, False)
+            hat.servo_enable(2, False)
+            hat.clear()
+            hat.show()
             print('Waiting for websockets thread to finish')
             websocket_thread.join()
 

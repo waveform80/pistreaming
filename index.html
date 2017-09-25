@@ -1,46 +1,86 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta name="viewport" content="width=${WIDTH}, initial-scale=1"/>
+	<meta name="viewport" content="width=${WIDTH}, initial-scale=1">
 	<title>jsmpeg streaming</title>
-	<style type="text/css">
-		body {
-			background: ${BGCOLOR};
-			text-align: center;
-			margin-top: 10%;
-		}
-		#videoCanvas {
-			/* Always stretch the canvas to 640x480, regardless of its
-			internal size. */
-			width: ${WIDTH}px;
-			height: ${HEIGHT}px;
-		}
-	</style>
+	<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 	<!-- The Canvas size specified here is the "initial" internal resolution. jsmpeg will
 		change this internal resolution to whatever the source provides. The size the
 		canvas is displayed on the website is dictated by the CSS style.
 	-->
-	<canvas id="videoCanvas" width="${WIDTH}" height="${HEIGHT}">
-		<p>
-			Please use a browser that supports the Canvas Element, like
-			<a href="http://www.google.com/chrome">Chrome</a>,
-			<a href="http://www.mozilla.com/firefox/">Firefox</a>,
-			<a href="http://www.apple.com/safari/">Safari</a> or Internet Explorer 10
-		</p>
-	</canvas>
+	<h1>Pan-Tilt HAT Web Interface</h1>
+	<p>A simple web-based interface demo for the truly awesome Pimoroni
+	<a href="https://shop.pimoroni.com/products/pan-tilt-hat">Pan-Tilt HAT</a>!</p>
+	<form id="hatForm">
+		<div id="videoDiv">
+			<canvas id="videoCanvas" width="${WIDTH}" height="${HEIGHT}">
+				<p>
+					Please use a browser that supports the Canvas Element, like
+					<a href="http://www.google.com/chrome">Chrome</a>,
+					<a href="http://www.mozilla.com/firefox/">Firefox</a>,
+					<a href="http://www.apple.com/safari/">Safari</a> or Internet Explorer 10
+				</p>
+			</canvas>
+			<div id="tiltLabel">Tilt</div>
+			<input id="tilt" type="range" min="-90" max="90" value="0" oninput="doOrient('tilt', value)">
+			<div id="panLabel">Pan</div>
+			<input id="pan" type="range" min="-90" max="90" value="0" oninput="doOrient('pan', value)">
+		</div>
+		<hr>
+		<h2>Neopixels</h2>
+		<div id="pixelDiv">
+			<ul>
+				<li><label><input type="radio" name="pixel" value="-1" checked>All</label></li>
+				<li><label><input type="radio" name="pixel" value="0">0</label></li>
+				<li><label><input type="radio" name="pixel" value="1">1</label></li>
+				<li><label><input type="radio" name="pixel" value="2">2</label></li>
+				<li><label><input type="radio" name="pixel" value="3">3</label></li>
+				<li><label><input type="radio" name="pixel" value="4">4</label></li>
+				<li><label><input type="radio" name="pixel" value="5">5</label></li>
+				<li><label><input type="radio" name="pixel" value="6">6</label></li>
+				<li><label><input type="radio" name="pixel" value="7">7</label></li>
+			</ul>
+		</div>
+		<div id="colorDiv">
+			<ul>
+				<li style="color: red"  >Red   <input id="red" type="range" min="0" max="255" value="0" oninput="doLight()"></li>
+				<li style="color: green">Green <input id="green" type="range" min="0" max="255" value="0" oninput="doLight()"></li>
+				<li style="color: blue" >Blue  <input id="blue" type="range" min="0" max="255" value="0" oninput="doLight()"></li>
+				<li style="color: white">White <input id="white" type="range" min="0" max="255" value="0" oninput="doLight()"></li>
+			</ul>
+		</div>
+	</form>
 	<script type="text/javascript" src="jsmpg.js"></script>
 	<script type="text/javascript">
 		// Show loading notice
 		var canvas = document.getElementById('videoCanvas');
+		var form = document.getElementById('hatForm');
 		var ctx = canvas.getContext('2d');
 		ctx.fillStyle = '${COLOR}';
 		ctx.fillText('Loading...', canvas.width/2-30, canvas.height/3);
 
 		// Setup the WebSocket connection and start the player
-		var client = new WebSocket('ws://${ADDRESS}/');
+		var client = new WebSocket('ws://' + window.location.hostname + ':${WS_PORT}/');
 		var player = new jsmpeg(client, {canvas:canvas});
+
+		function doOrient(servo, value) {
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', '/do_orient?' + servo + '=' + value, false);
+			xhr.send();
+		}
+
+		function doLight() {
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', '/do_light?' +
+				form.elements['pixel'].value + '=' +
+				form.elements['red'].value + ',' +
+				form.elements['green'].value + ',' +
+				form.elements['blue'].value + ',' +
+				form.elements['white'].value, false);
+			xhr.send();
+		}
 	</script>
 </body>
 </html>
