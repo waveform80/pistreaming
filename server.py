@@ -14,7 +14,11 @@ from wsgiref.simple_server import make_server
 
 import picamera
 from ws4py.websocket import WebSocket
-from ws4py.server.wsgirefserver import WSGIServer, WebSocketWSGIRequestHandler
+from ws4py.server.wsgirefserver import (
+    WSGIServer,
+    WebSocketWSGIHandler,
+    WebSocketWSGIRequestHandler,
+)
 from ws4py.server.wsgiutils import WebSocketWSGIApplication
 
 ###########################################
@@ -85,7 +89,7 @@ class BroadcastOutput(object):
     def __init__(self, camera):
         print('Spawning background conversion process')
         self.converter = Popen([
-            'avconv',
+            'ffmpeg',
             '-f', 'rawvideo',
             '-pix_fmt', 'yuv420p',
             '-s', '%dx%d' % camera.resolution,
@@ -134,6 +138,7 @@ def main():
         camera.hflip = HFLIP # flips image left-right, as needed
         sleep(1) # camera warm-up time
         print('Initializing websockets server on port %d' % WS_PORT)
+        WebSocketWSGIHandler.http_version = '1.1'
         websocket_server = make_server(
             '', WS_PORT,
             server_class=WSGIServer,
