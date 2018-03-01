@@ -187,7 +187,6 @@ class BroadcastThread(Thread):
             while True:
                 buf = self.converter.stdout.read1(32768)
                 if buf:
-                    print(len(buf))
                     self.websocket_server.manager.broadcast(buf, binary=True)
                 elif self.converter.poll() is not None:
                     break
