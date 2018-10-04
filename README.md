@@ -14,7 +14,7 @@ Firstly make sure you've got a functioning Pi camera module (test it with
 `raspistill` to be certain). Then make sure you've got the following packages
 installed:
 
-    $ sudo apt-get install libav-tools git python3-picamera python3-ws4py python3-pantilthat
+    $ sudo apt-get install ffmpeg git python3-picamera python3-ws4py python3-pantilthat
 
 Next, clone this repository:
 
