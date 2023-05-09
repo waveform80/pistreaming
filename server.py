@@ -3,6 +3,7 @@
 import sys
 import io
 import os
+import socket
 import shutil
 from subprocess import Popen, PIPE
 from string import Template
@@ -69,11 +70,16 @@ class StreamingHttpHandler(BaseHTTPRequestHandler):
         if self.command == 'GET':
             self.wfile.write(content)
 
+class HTTPServerV6(HTTPServer):
+  address_family = socket.AF_INET6
 
-class StreamingHttpServer(HTTPServer):
+class WSGIServerV6(WSGIServer):
+  address_family = socket.AF_INET6
+
+class StreamingHttpServer(HTTPServerV6):
     def __init__(self):
         super(StreamingHttpServer, self).__init__(
-                ('', HTTP_PORT), StreamingHttpHandler)
+                ('::', HTTP_PORT), StreamingHttpHandler)
         with io.open('index.html', 'r') as f:
             self.index_template = f.read()
         with io.open('jsmpg.js', 'r') as f:
@@ -140,8 +146,8 @@ def main():
         print('Initializing websockets server on port %d' % WS_PORT)
         WebSocketWSGIHandler.http_version = '1.1'
         websocket_server = make_server(
-            '', WS_PORT,
-            server_class=WSGIServer,
+                '::', WS_PORT,
+            server_class=WSGIServerV6,
             handler_class=WebSocketWSGIRequestHandler,
             app=WebSocketWSGIApplication(handler_cls=StreamingWebSocket))
         websocket_server.initialize_websockets_manager()
